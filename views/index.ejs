@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <script src="https://kit.fontawesome.com/5015b70303.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+
+<div class="nav">
+    <div>
+        <a class="logo" href="/"><i class="fa-solid fa-house fa-l"></i></a>
+    </div>
+        <div class="search-container">
+            <input type="text" placeholder="Search" name="search" autocomplete="off">
+            <input class="fontawesome submit" type="submit" value="&#xf002;" />
+        </div>
+        
+    
+          <div class="dropdown right-nav">
+            <button onclick="myFunction()" class="dropbtn">S</button>
+            <div id="myDropdown" class="dropdown-content profile">
+              <a href="#">Profile</a>
+              <a href="#">Help</a>
+              <a href="#">Settings</a>
+              <a href="/">Logout</a>
+            </div>
+          </div>
+    </div>
+     <div class="inner-container">
+        <div class="outer-container">
+        <div class="menu">
+           <div class="menu-list">
+           
+            <a href=""> <img src="cover.jpg" height="50"> Apt List</a>
+           </div>
+           <div class="menu-list">
+           
+            <a href=""> <img src="cover.jpg" height="50"> Apt List 2</a>
+           </div>
+           <div class="menu-list">
+           
+            <a href=""> <img src="cover.jpg" height="50"> List 3</a>
+           </div>
+           <div class="menu-list">
+           
+            <a href=""> <img src="cover.jpg" height="50"> List 4</a>
+           </div>
+           <div class="menu-list">
+           
+            <a href=""> <img src="cover.jpg" height="50"> List 5</a>
+           </div>
+          
+          
+        </div>  
+    <% if (locals.trackList) { %>
+         
+          <div class="list">
+            <ol id="songList">
+                <% trackList.forEach((song, index) => { %>
+                    <li data-index="<%= index %>">
+                        <span class="song-number"><%= index + 1 %>.</span>
+                        <span class="song"><%= song.name %></span> - <span><%= song.artist %></span>
+                        <span class="duration"><%= song.duration %></span>
+                    </li>
+                <% }); %>
+            </ol>
+        </div>
+    </div>
+        <div class="player">
+          <img id="cover" src="https://picsum.photos/300" height="450">
+          <audio id="audio"></audio>
+          <input type="range" id="seekbar" value="0" step="1">
+          <div class="controls">
+              <span id="currentTime">0:00</span>  <span id="duration">0:00</span>
+          </div>
+          <div class="controls buttons">
+              <button id="prev"><i class="fa-xl fa-solid fa-backward"></i></button>
+              <button id="playPause"><i class="fa-xl fa-solid fa-play"></i></button>
+              <button id="next"><i class="fa-xl fa-solid fa-forward"></i></button>
+          </div>
+          <div class="controls vol">
+              <label><i class="fa-xl fa-solid fa-volume-low"></i></label>
+              <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+          </div>
+      </div>
+        
+         
+     
+   
+    </div>
+
+   <p id="trackList" hidden><%= JSON.stringify(trackList); %></p>
+    <% } %>
+   
+
+
+</div>
+
+
+<script>
+
+const songElements = document.querySelectorAll(".list ol li");
+
+songElements.forEach((songElement, index) => {
+    songElement.addEventListener("click", () => {
+        currentTrack = index;  // Tıklanan şarkıyı çal
+        loadTrack(currentTrack);
+        audio.play();
+        updatePlayPauseIcon(true);  // Oynatma ikonunu güncelle
+    });
+});
+
+function updatePlayPauseIcon(isPlaying) {
+    const icon = playPauseBtn.querySelector("i");
+    if (isPlaying) {
+        icon.classList.remove("fa-play");
+        icon.classList.add("fa-pause");
+    } else {
+        icon.classList.remove("fa-pause");
+        icon.classList.add("fa-play");
+    }
+}
+function highlightCurrentTrack() {
+    const songElements = document.querySelectorAll(".list ol li");
+
+    // Önce tüm şarkıların aktif class'ını kaldır
+    songElements.forEach(li => li.classList.remove("active"));
+
+    // Şu an çalan şarkıyı aktif yap
+    const activeSong = songElements[currentTrack];
+    activeSong.classList.add("active");
+}
+
+const audio = document.getElementById("audio");
+        const playPauseBtn = document.getElementById("playPause");
+        const prevBtn = document.getElementById("prev");
+        const nextBtn = document.getElementById("next");
+        const seekbar = document.getElementById("seekbar");
+        const currentTimeEl = document.getElementById("currentTime");
+        const durationEl = document.getElementById("duration");
+        const volumeControl = document.getElementById("volume");
+       
+        const icon = playPauseBtn.querySelector("i");
+        
+        const playlist =  JSON.parse(document.getElementById("trackList").innerText);
+        let currentTrack = 0;
+        
+function updateSeekbar() {
+    if (audio.duration) { // Ses yüklendiğinde hesaplama yap
+        let progress = (audio.currentTime / audio.duration) * 100;
+        seekbar.style.background = `linear-gradient(to right, #8E1616 ${progress}%, #ffffff66 ${progress}%)`;
+    }
+}
+// Ses çubuğundaki gibi seekbar güncellenmeli
+audio.addEventListener("timeupdate", updateSeekbar);
+seekbar.addEventListener("input", function () {
+    updateSeekbar(); // Kullanıcı seekbar'ı kaydırırken de güncellenmeli
+});
+        function loadTrack(index) {
+            audio.src = playlist[index].src;
+
+            audio.load();
+         
+            document.getElementById("cover").src = playlist[index].cover;
+            highlightCurrentTrack(); 
+           
+        }
+        
+        playPauseBtn.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                updatePlayPauseIcon(true);
+               
+            } else {
+                audio.pause();
+                updatePlayPauseIcon(false);
+               
+            }
+        });
+
+        audio.addEventListener("loadedmetadata", () => {
+            seekbar.max = audio.duration;
+            seekbar.value = 0; // Başlangıçta 0 olmalı
+            updateSeekbar(); // Doğru renk ayarlaması yap
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener("timeupdate", () => {
+            seekbar.value = audio.currentTime;
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+        audio.addEventListener("ended", () => {
+    updatePlayPauseIcon(false);
+});
+        seekbar.addEventListener("input", () => {
+            audio.currentTime = seekbar.value;
+            updateSeekbar();
+        });
+
+        volumeControl.addEventListener("input", () => {
+            audio.volume = volumeControl.value;
+        });
+
+        nextBtn.addEventListener("click", () => {
+           
+            currentTrack = (currentTrack + 1) % playlist.length; 
+           
+            loadTrack(currentTrack);
+            audio.play();
+            updatePlayPauseIcon(true);
+
+        });
+
+        prevBtn.addEventListener("click", () => {
+            currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrack);
+            audio.play();
+            updatePlayPauseIcon(true);
+        });
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+        }
+        function updateVolumeBar() {
+    let volumePercent = volumeControl.value * 100;
+    volumeControl.style.background = `linear-gradient(to right, #8E1616 ${volumePercent}%, 
+#ffffff66 ${volumePercent}%)`;
+}
+
+// Ses çubuğunu güncelle
+volumeControl.addEventListener("input", () => {
+    audio.volume = volumeControl.value;
+    updateVolumeBar();
+});
+
+// Sayfa yüklendiğinde varsayılan ses seviyesini uygula
+window.addEventListener("load", () => {
+    updateVolumeBar();
+});
+        loadTrack(currentTrack);
+
+        function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+highlightCurrentTrack();
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const menuItems = document.querySelectorAll(".menu-list a"); // Menüdeki tüm linkleri seç
+
+    // Sayfa yüklendiğinde ilk listeyi otomatik aç
+    showTrackList();
+
+    menuItems.forEach((item, index) => {
+        item.addEventListener("click", (event) => {
+            event.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
+
+            // İlk menü elemanına tıklandıysa trackList göster
+            if (index === 0) {
+                showTrackList();
+            }
+        });
+    });
+});
+
+// TrackList'i açacak fonksiyon
+function showTrackList() {
+    const listContainer = document.querySelector(".list");
+    listContainer.style.display = "block"; // List'i görünür yap
+}
+</script>
+
+
+
+</body>
+</html>
